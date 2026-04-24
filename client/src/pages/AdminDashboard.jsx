@@ -130,14 +130,14 @@ const AdminDashboard = () => {
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {[
-                { icon: '👥', label: 'Total Voters', value: stats?.totalVoters, color: 'blue' },
-                { icon: '🗳️', label: 'Total Elections', value: stats?.totalElections, color: 'green' },
-                { icon: '✅', label: 'Total Votes', value: stats?.totalVotes, color: 'purple' },
-                { icon: '🟢', label: 'Active Elections', value: stats?.activeElections, color: 'amber' }
-              ].map(({ icon, label, value, color }) => (
+                { icon: '👥', label: 'Total Voters', value: stats?.totalVoters, className: 'text-blue-600' },
+                { icon: '🗳️', label: 'Total Elections', value: stats?.totalElections, className: 'text-green-600' },
+                { icon: '✅', label: 'Total Votes', value: stats?.totalVotes, className: 'text-purple-600' },
+                { icon: '🟢', label: 'Active Elections', value: stats?.activeElections, className: 'text-amber-600' }
+              ].map(({ icon, label, value, className }) => (
                 <div key={label} className="bg-white rounded-2xl shadow-sm p-6">
                   <div className="text-3xl mb-2">{icon}</div>
-                  <div className={`text-3xl font-bold text-${color}-600 mb-1`}>{value ?? 0}</div>
+                  <div className={`text-3xl font-bold mb-1 ${className}`}>{value ?? 0}</div>
                   <div className="text-gray-500 text-sm">{label}</div>
                 </div>
               ))}
