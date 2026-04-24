@@ -27,7 +27,12 @@ export const createElection = async (req, res) => {
  */
 export const updateElection = async (req, res) => {
   try {
-    const election = await Election.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { title, description, startDate, endDate, status } = req.body;
+    const election = await Election.findByIdAndUpdate(
+      req.params.id,
+      { title, description, startDate, endDate, status },
+      { new: true, runValidators: true }
+    );
     if (!election) return res.status(404).json({ message: 'Election not found' });
     res.json(election);
   } catch (error) {

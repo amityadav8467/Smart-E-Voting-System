@@ -40,7 +40,7 @@ export const getElectionResults = async (req, res) => {
     if (!election) return res.status(404).json({ message: 'Election not found' });
 
     const results = election.candidates.sort((a, b) => b.voteCount - a.voteCount);
-    const winner = results[0];
+    const winner = results.length > 0 ? results[0] : null;
 
     res.json({ election, results, winner });
   } catch (error) {

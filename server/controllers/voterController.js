@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import Election from '../models/Election.js';
+import Candidate from '../models/Candidate.js';
 import Vote from '../models/Vote.js';
 import User from '../models/User.js';
 
@@ -43,9 +44,7 @@ export const castVote = async (req, res) => {
     await Vote.create({ voterId: hashedVoterId, electionId, candidateId, receiptCode });
 
     await Election.findByIdAndUpdate(electionId, { $inc: { totalVotes: 1 } });
-    await import('../models/Candidate.js').then(({ default: Candidate }) =>
-      Candidate.findByIdAndUpdate(candidateId, { $inc: { voteCount: 1 } })
-    );
+    await Candidate.findByIdAndUpdate(candidateId, { $inc: { voteCount: 1 } });
 
     await User.findByIdAndUpdate(voter._id, { $push: { hasVoted: { electionId } } });
 

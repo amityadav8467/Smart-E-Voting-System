@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import voterRoutes from './routes/voterRoutes.js';
@@ -24,10 +25,17 @@ const io = new Server(server, {
 // Connect to MongoDB
 connectDB();
 
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { message: 'Too many requests from this IP, please try again later' }
+});
+
 // Middleware
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
 app.use(express.json());
+app.use(globalLimiter);
 
 // Attach io to requests
 app.use((req, res, next) => {
