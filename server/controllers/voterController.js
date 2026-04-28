@@ -4,6 +4,7 @@ import Election from '../models/Election.js';
 import Candidate from '../models/Candidate.js';
 import Vote from '../models/Vote.js';
 import User from '../models/User.js';
+import { isValidObjectId, sanitizeString } from '../utils/validate.js';
 
 /**
  * @desc Get active elections
@@ -26,6 +27,11 @@ export const getActiveElections = async (req, res) => {
 export const castVote = async (req, res) => {
   try {
     const { electionId, candidateId } = req.body;
+
+    if (!isValidObjectId(electionId) || !isValidObjectId(candidateId)) {
+      return res.status(400).json({ message: 'Invalid election or candidate ID' });
+    }
+
     const voter = req.user;
 
     const election = await Election.findById(electionId);
@@ -94,7 +100,9 @@ export const getProfile = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { name, phone } = req.body;
+    const name = sanitizeString(req.body.name);
+    const phone = sanitizeString(req.body.phone);
+    if (!name) return res.status(400).json({ message: 'Name is required' });
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { name, phone },

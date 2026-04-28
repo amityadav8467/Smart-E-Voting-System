@@ -2,6 +2,7 @@ import Election from '../models/Election.js';
 import Candidate from '../models/Candidate.js';
 import User from '../models/User.js';
 import Vote from '../models/Vote.js';
+import { isValidObjectId, sanitizeString } from '../utils/validate.js';
 
 /**
  * @desc Create election
@@ -9,7 +10,10 @@ import Vote from '../models/Vote.js';
  */
 export const createElection = async (req, res) => {
   try {
-    const { title, description, startDate, endDate } = req.body;
+    const title = sanitizeString(req.body.title);
+    const description = sanitizeString(req.body.description);
+    const { startDate, endDate } = req.body;
+    if (!title) return res.status(400).json({ message: 'Title is required' });
     const election = await Election.create({
       title, description, startDate, endDate,
       createdBy: req.user._id
@@ -27,7 +31,12 @@ export const createElection = async (req, res) => {
  */
 export const updateElection = async (req, res) => {
   try {
-    const { title, description, startDate, endDate, status } = req.body;
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid election ID' });
+    }
+    const title = sanitizeString(req.body.title);
+    const description = sanitizeString(req.body.description);
+    const { startDate, endDate, status } = req.body;
     const election = await Election.findByIdAndUpdate(
       req.params.id,
       { title, description, startDate, endDate, status },
@@ -47,6 +56,9 @@ export const updateElection = async (req, res) => {
  */
 export const deleteElection = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid election ID' });
+    }
     await Election.findByIdAndDelete(req.params.id);
     await Candidate.deleteMany({ electionId: req.params.id });
     res.json({ message: 'Election deleted successfully' });
@@ -62,8 +74,16 @@ export const deleteElection = async (req, res) => {
  */
 export const addCandidate = async (req, res) => {
   try {
-    const { name, party, symbol, manifesto, userId } = req.body;
     const electionId = req.params.id;
+    if (!isValidObjectId(electionId)) {
+      return res.status(400).json({ message: 'Invalid election ID' });
+    }
+    const name = sanitizeString(req.body.name);
+    const party = sanitizeString(req.body.party);
+    const symbol = sanitizeString(req.body.symbol);
+    const manifesto = sanitizeString(req.body.manifesto);
+    const { userId } = req.body;
+    if (!name || !party) return res.status(400).json({ message: 'Name and party are required' });
 
     const candidate = await Candidate.create({ name, party, symbol, manifesto, electionId, userId });
     await Election.findByIdAndUpdate(electionId, { $push: { candidates: candidate._id } });
@@ -96,7 +116,10 @@ export const getAllVoters = async (req, res) => {
  */
 export const changeElectionStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid election ID' });
+    }
+    const status = sanitizeString(req.body.status);
     const election = await Election.findByIdAndUpdate(
       req.params.id, { status }, { new: true }
     );
@@ -148,6 +171,9 @@ export const getDashboardStats = async (req, res) => {
  */
 export const exportResults = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid election ID' });
+    }
     const election = await Election.findById(req.params.id).populate('candidates');
     if (!election) return res.status(404).json({ message: 'Election not found' });
 

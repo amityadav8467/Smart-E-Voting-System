@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { generateOTP, sendOTPEmail } from '../utils/sendOTP.js';
+import { isValidObjectId, sanitizeString } from '../utils/validate.js';
 
 /**
  * Generate JWT access token
@@ -48,11 +49,18 @@ export const register = async (req, res) => {
 export const verifyOTP = async (req, res) => {
   try {
     const { userId, otp } = req.body;
+
+    if (!isValidObjectId(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+    const sanitizedOtp = sanitizeString(otp);
+    if (!sanitizedOtp) return res.status(400).json({ message: 'Invalid OTP' });
+
     const user = await User.findById(userId);
 
     if (!user) return res.status(404).json({ message: 'User not found' });
     if (user.isVerified) return res.status(400).json({ message: 'User already verified' });
-    if (user.otp !== otp || user.otpExpiry < Date.now()) {
+    if (user.otp !== sanitizedOtp || user.otpExpiry < Date.now()) {
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
 
@@ -74,7 +82,11 @@ export const verifyOTP = async (req, res) => {
  */
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = sanitizeString(req.body.email);
+    const { password } = req.body;
+    if (!email || typeof password !== 'string') {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
     const user = await User.findOne({ email });
 
     if (!user || !(await user.comparePassword(password))) {
@@ -105,7 +117,9 @@ export const login = async (req, res) => {
  */
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = sanitizeString(req.body.email);
+    if (!email) return res.status(400).json({ message: 'Valid email is required' });
+
     const user = await User.findOne({ email });
 
     if (!user) return res.status(404).json({ message: 'No user found with this email' });
@@ -130,10 +144,20 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { userId, otp, newPassword } = req.body;
+
+    if (!isValidObjectId(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+    const sanitizedOtp = sanitizeString(otp);
+    if (!sanitizedOtp) return res.status(400).json({ message: 'Invalid OTP' });
+    if (typeof newPassword !== 'string' || newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
     const user = await User.findById(userId);
 
     if (!user) return res.status(404).json({ message: 'User not found' });
-    if (user.otp !== otp || user.otpExpiry < Date.now()) {
+    if (user.otp !== sanitizedOtp || user.otpExpiry < Date.now()) {
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
 
