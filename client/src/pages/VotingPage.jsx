@@ -49,12 +49,20 @@ const VotingPage = () => {
             <p className="font-mono text-sm text-green-800 break-all font-bold">{receipt}</p>
           </div>
           <p className="text-gray-400 text-sm mb-6">Save this code to verify your vote later.</p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-medium"
-          >
-            Back to Dashboard
-          </button>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigate('/verify-receipt', { state: { code: receipt } })}
+              className="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 font-medium"
+            >
+              🧾 Verify My Vote
+            </button>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-medium"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );

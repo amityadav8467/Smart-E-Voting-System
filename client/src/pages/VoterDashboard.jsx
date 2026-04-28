@@ -75,7 +75,7 @@ const VoterDashboard = () => {
                 <p className="text-xl">No active elections at the moment</p>
               </div>
             ) : elections.map(election => {
-              const hasVoted = profile?.hasVoted?.some(v => v.electionId === election._id);
+              const hasVoted = profile?.hasVoted?.some(v => v.electionId?.toString() === election._id?.toString());
               return (
                 <div key={election._id} className="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition-shadow">
                   <div className="flex justify-between items-start mb-4">
@@ -103,7 +103,15 @@ const VoterDashboard = () => {
 
         {activeTab === 'history' && (
           <div className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Voting History</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-800">Voting History</h2>
+              <Link
+                to="/verify-receipt"
+                className="text-sm bg-blue-50 text-blue-600 border border-blue-200 px-4 py-2 rounded-xl hover:bg-blue-100 transition-colors"
+              >
+                🧾 Verify Receipt
+              </Link>
+            </div>
             {profile?.hasVoted?.length === 0 ? (
               <p className="text-gray-400 text-center py-8">You haven't voted in any elections yet.</p>
             ) : (

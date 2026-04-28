@@ -110,6 +110,20 @@ export const changeElectionStatus = async (req, res) => {
 };
 
 /**
+ * @desc Get all elections (admin)
+ * @route GET /api/admin/elections
+ */
+export const getAllElections = async (req, res) => {
+  try {
+    const elections = await Election.find().populate('candidates').sort({ createdAt: -1 });
+    res.json(elections);
+  } catch (error) {
+    console.error('Get all elections error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+/**
  * @desc Get admin dashboard stats
  * @route GET /api/admin/dashboard
  */

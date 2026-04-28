@@ -6,6 +6,7 @@ import Loader from '../components/Loader.jsx';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
+  const [elections, setElections] = useState([]);
   const [voters, setVoters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -26,9 +27,16 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchElections = async () => {
+    try {
+      const { data } = await api.get('/admin/elections');
+      setElections(data);
+    } catch {}
+  };
+
   useEffect(() => {
     const fetchAll = async () => {
-      await fetchStats();
+      await Promise.all([fetchStats(), fetchElections()]);
       try {
         const { data } = await api.get('/admin/voters');
         setVoters(data);
@@ -36,7 +44,7 @@ const AdminDashboard = () => {
       setLoading(false);
     };
     fetchAll();
-    socketRef.current = io('http://localhost:5000');
+    socketRef.current = io(import.meta.env.VITE_SERVER_URL || 'http://localhost:5000');
     socketRef.current.on('voteUpdate', fetchStats);
     return () => socketRef.current?.disconnect();
   }, []);
@@ -49,6 +57,7 @@ const AdminDashboard = () => {
       setShowElectionForm(false);
       setElectionForm({ title: '', description: '', startDate: '', endDate: '' });
       fetchStats();
+      fetchElections();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create election');
     }
@@ -59,6 +68,7 @@ const AdminDashboard = () => {
       await api.put(`/admin/elections/${electionId}/status`, { status });
       toast.success(`Election status changed to ${status}`);
       fetchStats();
+      fetchElections();
     } catch {
       toast.error('Failed to change status');
     }
@@ -70,6 +80,7 @@ const AdminDashboard = () => {
       await api.delete(`/admin/elections/${electionId}`);
       toast.success('Election deleted');
       fetchStats();
+      fetchElections();
     } catch {
       toast.error('Failed to delete election');
     }
@@ -83,6 +94,7 @@ const AdminDashboard = () => {
       setShowCandidateForm(false);
       setCandidateForm({ name: '', party: '', symbol: '🗳️', manifesto: '' });
       fetchStats();
+      fetchElections();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to add candidate');
     }
@@ -295,7 +307,11 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {stats?.recentElections?.map(election => (
+                  {elections.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-gray-400">No elections found</td>
+                    </tr>
+                  ) : elections.map(election => (
                     <tr key={election._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-800">{election.title}</td>
                       <td className="px-6 py-4">

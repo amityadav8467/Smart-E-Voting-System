@@ -7,10 +7,12 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Home from './pages/Home.jsx';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
 import VoterDashboard from './pages/VoterDashboard.jsx';
 import VotingPage from './pages/VotingPage.jsx';
 import Results from './pages/Results.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
+import VerifyReceipt from './pages/VerifyReceipt.jsx';
 
 function App() {
   return (
@@ -22,7 +24,16 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/results/:id" element={<Results />} />
+          <Route
+            path="/verify-receipt"
+            element={
+              <ProtectedRoute roles={['voter', 'admin', 'candidate']}>
+                <VerifyReceipt />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={

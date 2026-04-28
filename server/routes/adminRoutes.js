@@ -1,7 +1,8 @@
 import express from 'express';
 import {
   createElection, updateElection, deleteElection, addCandidate,
-  getAllVoters, changeElectionStatus, getDashboardStats, exportResults
+  getAllVoters, changeElectionStatus, getDashboardStats, exportResults,
+  getAllElections
 } from '../controllers/adminController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authorize } from '../middleware/roleMiddleware.js';
@@ -12,6 +13,7 @@ router.use(protect);
 router.use(authorize('admin'));
 
 router.get('/dashboard', getDashboardStats);
+router.get('/elections', getAllElections);
 router.post('/elections', createElection);
 router.put('/elections/:id', updateElection);
 router.delete('/elections/:id', deleteElection);

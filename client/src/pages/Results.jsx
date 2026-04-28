@@ -30,7 +30,7 @@ const Results = () => {
 
   useEffect(() => {
     fetchResults();
-    socketRef.current = io('http://localhost:5000');
+    socketRef.current = io(import.meta.env.VITE_SERVER_URL || 'http://localhost:5000');
     socketRef.current.on('voteUpdate', ({ electionId }) => {
       if (electionId === id) fetchResults();
     });
