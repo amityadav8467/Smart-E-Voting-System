@@ -36,7 +36,11 @@ export const updateElection = async (req, res) => {
     }
     const title = sanitizeString(req.body.title);
     const description = sanitizeString(req.body.description);
-    const { startDate, endDate, status } = req.body;
+    const { startDate, endDate } = req.body;
+    const status = sanitizeString(req.body.status);
+    if (status && !['upcoming', 'active', 'ended'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
     const election = await Election.findByIdAndUpdate(
       req.params.id,
       { title, description, startDate, endDate, status },
@@ -84,6 +88,9 @@ export const addCandidate = async (req, res) => {
     const manifesto = sanitizeString(req.body.manifesto);
     const { userId } = req.body;
     if (!name || !party) return res.status(400).json({ message: 'Name and party are required' });
+    if (userId && !isValidObjectId(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
 
     const candidate = await Candidate.create({ name, party, symbol, manifesto, electionId, userId });
     await Election.findByIdAndUpdate(electionId, { $push: { candidates: candidate._id } });
@@ -120,6 +127,9 @@ export const changeElectionStatus = async (req, res) => {
       return res.status(400).json({ message: 'Invalid election ID' });
     }
     const status = sanitizeString(req.body.status);
+    if (!status || !['upcoming', 'active', 'ended'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
     const election = await Election.findByIdAndUpdate(
       req.params.id, { status }, { new: true }
     );

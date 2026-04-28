@@ -6,7 +6,9 @@ import mongoose from 'mongoose';
  * @returns {boolean}
  */
 export const isValidObjectId = (id) =>
-  typeof id === 'string' && mongoose.Types.ObjectId.isValid(id);
+  typeof id === 'string' &&
+  /^[0-9a-fA-F]{24}$/.test(id) &&
+  mongoose.Types.ObjectId.isValid(id);
 
 /**
  * Sanitize a value to a plain string, rejecting objects to prevent NoSQL injection

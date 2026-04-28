@@ -103,9 +103,11 @@ export const updateProfile = async (req, res) => {
     const name = sanitizeString(req.body.name);
     const phone = sanitizeString(req.body.phone);
     if (!name) return res.status(400).json({ message: 'Name is required' });
+    const updateData = { name };
+    if (phone !== undefined) updateData.phone = phone;
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { name, phone },
+      updateData,
       { new: true }
     ).select('-password -otp -otpExpiry');
     res.json(user);
